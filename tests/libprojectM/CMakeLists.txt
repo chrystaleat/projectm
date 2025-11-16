@@ -35,6 +35,7 @@ add_executable(projectM-unittest
         Hyperdimensional4DTest.cpp
         BoidsFlockingTest.cpp
         ReactionDiffusionTest.cpp
+        QuaternionJuliaTest.cpp
 
         $<TARGET_OBJECTS:Audio>
         $<TARGET_OBJECTS:MilkdropPreset>

@@ -72,6 +72,8 @@ add_library(Renderer OBJECT
         BoidsSystem.hpp
         ReactionDiffusion.cpp
         ReactionDiffusion.hpp
+        QuaternionJulia.cpp
+        QuaternionJulia.hpp
         )
 
 target_include_directories(Renderer
