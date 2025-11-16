@@ -31,6 +31,7 @@ add_executable(projectM-unittest
         WaveformAlignerSecurityTest.cpp
         PresetFileParserTest.cpp
         AudioFeatureExtractorTest.cpp
+        VerletPhysicsTest.cpp
 
         $<TARGET_OBJECTS:Audio>
         $<TARGET_OBJECTS:MilkdropPreset>

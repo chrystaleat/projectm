@@ -58,6 +58,12 @@ add_library(Renderer OBJECT
         VertexBufferUsage.hpp
         VertexIndexArray.cpp
         VertexIndexArray.hpp
+        VerletParticle.cpp
+        VerletParticle.hpp
+        ForceField.cpp
+        ForceField.hpp
+        ParticleSystem.cpp
+        ParticleSystem.hpp
         )
 
 target_include_directories(Renderer
