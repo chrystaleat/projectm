@@ -34,7 +34,12 @@ void Border::Draw(const PerFrameContext& presetPerFrameContext)
     // No additive drawing for borders
     Renderer::BlendMode::Set(true, Renderer::BlendMode::Function::SourceAlpha, Renderer::BlendMode::Function::OneMinusSourceAlpha);
 
+    // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing
     auto shader = m_presetState.untexturedShader.lock();
+    if (!shader)
+    {
+        return;
+    }
     shader->Bind();
     shader->SetUniformMat4x4("vertex_transformation", PresetState::orthogonalProjection);
 

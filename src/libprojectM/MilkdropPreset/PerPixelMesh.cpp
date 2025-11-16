@@ -391,8 +391,12 @@ void PerPixelMesh::WarpedBlit(const PresetState& presetState,
         shader.SetUniformFloat("decay", decay);
     }
 
-    assert(!presetState.mainTexture.expired());
-    presetState.mainTexture.lock()->Bind(0);
+    // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing (replace assert with proper check)
+    auto mainTexture = presetState.mainTexture.lock();
+    if (mainTexture)
+    {
+        mainTexture->Bind(0);
+    }
 
     // Set wrap mode and bind the sampler to get interpolation right.
     if (*perFrameContext.wrap > 0.0001f)

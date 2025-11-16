@@ -57,7 +57,12 @@ void VideoEcho::Draw()
                      1.0f};
     }
 
+    // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing
     auto shader = m_presetState.texturedShader.lock();
+    if (!shader)
+    {
+        return;
+    }
     shader->Bind();
     shader->SetUniformMat4x4("vertex_transformation", PresetState::orthogonalProjection);
     shader->SetUniformInt("texture_sampler", 0);

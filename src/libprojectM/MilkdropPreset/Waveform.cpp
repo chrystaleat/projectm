@@ -39,7 +39,12 @@ void Waveform::Draw(const PerFrameContext& presetPerFrameContext)
 #endif
     glLineWidth(1);
 
+    // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing
     auto shader = m_presetState.untexturedShader.lock();
+    if (!shader)
+    {
+        return;
+    }
     shader->Bind();
     shader->SetUniformMat4x4("vertex_transformation", PresetState::orthogonalProjection);
 

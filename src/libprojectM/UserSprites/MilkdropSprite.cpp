@@ -104,8 +104,12 @@ void MilkdropSprite::Draw(const Audio::FrameAudioData& audioData,
                           uint32_t outputFramebufferObject,
                           PresetList presets)
 {
+    // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing (replace assert with proper check)
     auto spriteShader = m_spriteShader.lock();
-    assert(spriteShader.get());
+    if (!spriteShader)
+    {
+        return;
+    }
 
     m_codeContext.RunPerFrameCode(audioData, renderContext);
 

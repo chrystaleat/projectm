@@ -146,7 +146,12 @@ void CustomShape::Draw()
 
         if (m_fillMesh.UseUV())
         {
+            // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing
             auto shader = m_presetState.texturedShader.lock();
+            if (!shader)
+            {
+                return;
+            }
             shader->Bind();
             shader->SetUniformMat4x4("vertex_transformation", PresetState::orthogonalProjection);
             shader->SetUniformInt("texture_sampler", 0);
@@ -155,8 +160,12 @@ void CustomShape::Draw()
             auto textureAspectY = m_presetState.renderContext.aspectY;
             if (m_image.empty())
             {
-                assert(!m_presetState.mainTexture.expired());
-                m_presetState.mainTexture.lock()->Bind(0);
+                // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing
+                auto mainTexture = m_presetState.mainTexture.lock();
+                if (mainTexture)
+                {
+                    mainTexture->Bind(0);
+                }
             }
             else
             {
@@ -169,8 +178,12 @@ void CustomShape::Draw()
                 else
                 {
                     // No texture found, fall back to main texture.
-                    assert(!m_presetState.mainTexture.expired());
-                    m_presetState.mainTexture.lock()->Bind(0);
+                    // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing
+                    auto mainTexture = m_presetState.mainTexture.lock();
+                    if (mainTexture)
+                    {
+                        mainTexture->Bind(0);
+                    }
                 }
             }
 
@@ -195,7 +208,12 @@ void CustomShape::Draw()
         else
         {
             // Untextured (creates a color gradient: center=r/g/b/a to border=r2/b2/g2/a2)
+            // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing
             auto shader = m_presetState.untexturedShader.lock();
+            if (!shader)
+            {
+                return;
+            }
             shader->Bind();
             shader->SetUniformMat4x4("vertex_transformation", PresetState::orthogonalProjection);
         }
@@ -220,7 +238,12 @@ void CustomShape::Draw()
                 points[i] = m_fillMesh.Vertex(i + 1);
             }
 
+            // SECURITY FIX (HIGH-007): Check weak_ptr lock result before dereferencing
             auto shader = m_presetState.untexturedShader.lock();
+            if (!shader)
+            {
+                return;
+            }
             shader->Bind();
             shader->SetUniformMat4x4("vertex_transformation", PresetState::orthogonalProjection);
 
