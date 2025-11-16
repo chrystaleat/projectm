@@ -42,7 +42,20 @@ void WaveformAligner::ResampleOctaves(std::vector<WaveformBuffer>& dstWaveformMi
     {
         for (uint32_t sample = 0; sample < m_octaveSamples[octave]; sample++)
         {
-            dstWaveformMips[octave][sample] = 0.5f * (dstWaveformMips[octave - 1][sample * 2] + dstWaveformMips[octave - 1][sample * 2 + 1]);
+            // SECURITY FIX: Ensure (sample * 2 + 1) doesn't exceed previous octave's sample count
+            uint32_t srcIndex1 = sample * 2;
+            uint32_t srcIndex2 = sample * 2 + 1;
+
+            // Bounds check to prevent buffer overflow
+            if (srcIndex2 < m_octaveSamples[octave - 1])
+            {
+                dstWaveformMips[octave][sample] = 0.5f * (dstWaveformMips[octave - 1][srcIndex1] + dstWaveformMips[octave - 1][srcIndex2]);
+            }
+            else
+            {
+                // Fallback: use last valid sample if we're at the boundary
+                dstWaveformMips[octave][sample] = dstWaveformMips[octave - 1][srcIndex1];
+            }
         }
     }
 }
@@ -104,18 +117,30 @@ void WaveformAligner::GenerateWeights()
         uint32_t sample{};
         // The code below also is only needed because of the TWEAK above, which zeroes
         // a total of 64% of the weights.
-        while (m_aligmentWeights[octave][sample] == 0 && sample < compareSamples)
+        // SECURITY FIX (CRIT-003): Check bounds BEFORE array access to prevent buffer overflow
+        while (sample < compareSamples && m_aligmentWeights[octave][sample] == 0)
         {
             sample++;
         }
         m_firstNonzeroWeights[octave] = sample;
 
-        sample = compareSamples - 1;
-        while (m_aligmentWeights[octave][sample] == 0 && compareSamples > 1)
+        // SECURITY FIX (CRIT-004): Prevent integer underflow when searching backwards
+        // Use signed integer to safely detect when we've gone below zero
+        if (compareSamples > 0)
         {
-            sample--;
+            int32_t signedSample = static_cast<int32_t>(compareSamples - 1);
+            // Check both bounds and sample > 0 to prevent underflow to UINT32_MAX
+            while (signedSample > 0 && m_aligmentWeights[octave][signedSample] == 0)
+            {
+                signedSample--;
+            }
+            m_lastNonzeroWeights[octave] = static_cast<uint32_t>(std::max(0, signedSample));
         }
-        m_lastNonzeroWeights[octave] = sample;
+        else
+        {
+            // Edge case: if compareSamples is 0, set to 0
+            m_lastNonzeroWeights[octave] = 0;
+        }
     }
 }
 
@@ -143,9 +168,16 @@ int WaveformAligner::CalculateOffset(std::vector<WaveformBuffer>& newWaveformMip
 
             // Perform the cross-correlation. Note that we shift the new waveform but not the old
             // one because we're looking for the offset between them that produces the lowest error.
+            // SECURITY FIX: Add bounds checking to prevent buffer overflow
             for (uint32_t i = m_firstNonzeroWeights[octave]; i <= m_lastNonzeroWeights[octave]; i++)
             {
-                errorSum += std::abs((newWaveformMips[octave][i + sample] - m_oldWaveformMips[octave][i]) * m_aligmentWeights[octave][i]);
+                uint32_t shiftedIndex = i + static_cast<uint32_t>(sample);
+                // Bounds check: ensure shifted index is within the octave's sample count
+                if (shiftedIndex < m_octaveSamples[octave])
+                {
+                    errorSum += std::abs((newWaveformMips[octave][shiftedIndex] - m_oldWaveformMips[octave][i]) * m_aligmentWeights[octave][i]);
+                }
+                // If out of bounds, skip this sample (contributes 0 to error sum)
             }
 
             if (lowestErrorOffset == -1 || errorSum < lowestErrorAmount)

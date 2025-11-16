@@ -24,6 +24,13 @@ auto PresetFileParser::Read(std::istream& presetStream) -> bool
     auto fileSize = presetStream.tellg();
     presetStream.seekg(0, presetStream.beg);
 
+    // SECURITY FIX (HIGH-009): Validate tellg() didn't fail before casting to size_t
+    // tellg() returns -1 on error, which casts to SIZE_MAX and bypasses the size check
+    if (fileSize < 0)
+    {
+        return false;
+    }
+
     if (static_cast<size_t>(fileSize) > maxFileSize)
     {
         return false;
@@ -82,6 +89,9 @@ auto PresetFileParser::GetCode(const std::string& keyPrefix) const -> std::strin
 
     key.replace(0, lowerKey.length(), lowerKey);
 
+    // SECURITY FIX (HIGH-010): Track accumulated code size to prevent memory exhaustion
+    size_t accumulatedSize = 0;
+
     for (int index{1}; index <= 99999; ++index)
     {
         key.replace(lowerKey.length(), 5, std::to_string(index));
@@ -97,7 +107,17 @@ auto PresetFileParser::GetCode(const std::string& keyPrefix) const -> std::strin
         {
             line.erase(0, 1);
         }
+
+        // Check if adding this line would exceed the maximum code size
+        size_t lineSize = line.length() + 1; // +1 for newline
+        if (accumulatedSize + lineSize > maxCodeSize)
+        {
+            // Stop adding lines if we've hit the limit
+            break;
+        }
+
         code << line << std::endl;
+        accumulatedSize += lineSize;
     }
 
     auto codeStr = code.str();

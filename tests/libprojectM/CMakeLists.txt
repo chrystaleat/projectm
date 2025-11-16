@@ -28,6 +28,7 @@ test_api_headers(TestMainAPIHeaders
 
 add_executable(projectM-unittest
         WaveformAlignerTest.cpp
+        WaveformAlignerSecurityTest.cpp
         PresetFileParserTest.cpp
 
         $<TARGET_OBJECTS:Audio>
