@@ -64,6 +64,10 @@ add_library(Renderer OBJECT
         ForceField.hpp
         ParticleSystem.cpp
         ParticleSystem.hpp
+        Vec4D.hpp
+        Tesseract.cpp
+        Tesseract.hpp
+        HyperdimensionalProjection.hpp
         )
 
 target_include_directories(Renderer
