@@ -10,6 +10,9 @@ add_library(Audio OBJECT
         Loudness.hpp
         WaveformAligner.cpp
         WaveformAligner.hpp
+        AudioFeatures.hpp
+        AudioFeatureExtractor.cpp
+        AudioFeatureExtractor.hpp
         )
 
 target_include_directories(Audio
