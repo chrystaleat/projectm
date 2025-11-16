@@ -86,9 +86,13 @@ void MilkdropFFT::InitEqualizeTable(bool equalize)
 
     m_equalize.resize(m_numFrequencies / 2);
 
+    // FIX: Prevent log approaching zero/negative infinity for large i values
+    constexpr float epsilon = 1e-7f;
+
     for (size_t i = 0; i < m_numFrequencies / 2; i++)
     {
-        m_equalize[i] = scaling * std::log(static_cast<float>(m_numFrequencies / 2 - i) * inverseHalfNumFrequencies);
+        float const logArg = static_cast<float>(m_numFrequencies / 2 - i) * inverseHalfNumFrequencies;
+        m_equalize[i] = scaling * std::log(std::max(epsilon, logArg));
     }
 }
 
