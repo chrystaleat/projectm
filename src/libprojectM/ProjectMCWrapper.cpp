@@ -9,6 +9,22 @@
 #include <projectM-4/render_opengl.h>
 #include <sstream>
 
+// CRITICAL FIX: Macro to safely validate C API handles
+// Prevents crashes from null/invalid handles passed to C API functions
+#define VALIDATE_INSTANCE_OR_RETURN(instance_var, return_value) \
+    do { \
+        if (!(instance_var)) { \
+            return return_value; \
+        } \
+    } while (0)
+
+#define VALIDATE_INSTANCE_OR_RETURN_VOID(instance_var) \
+    do { \
+        if (!(instance_var)) { \
+            return; \
+        } \
+    } while (0)
+
 
 namespace libprojectM {
 
@@ -34,6 +50,10 @@ void projectMWrapper::PresetSwitchFailedEvent(const std::string& presetFilename,
 
 libprojectM::projectMWrapper* handle_to_instance(projectm_handle instance)
 {
+    if (instance == nullptr)
+    {
+        return nullptr;
+    }
     return reinterpret_cast<libprojectM::projectMWrapper*>(instance);
 }
 
@@ -80,6 +100,7 @@ projectm_handle projectm_create()
 void projectm_destroy(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     delete projectMInstance;
 }
 
@@ -87,6 +108,7 @@ void projectm_load_preset_file(projectm_handle instance, const char* filename,
                                bool smooth_transition)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->LoadPresetFile(filename, smooth_transition);
 }
 
@@ -95,6 +117,7 @@ void projectm_load_preset_data(projectm_handle instance, const char* data,
 {
     std::stringstream presetDataStream(data);
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->LoadPresetData(presetDataStream, smooth_transition);
 }
 
@@ -102,6 +125,7 @@ void projectm_set_preset_switch_requested_event_callback(projectm_handle instanc
                                                          projectm_preset_switch_requested_event callback, void* user_data)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->m_presetSwitchRequestedEventCallback = callback;
     projectMInstance->m_presetSwitchRequestedEventUserData = user_data;
 }
@@ -110,6 +134,7 @@ void projectm_set_preset_switch_failed_event_callback(projectm_handle instance,
                                                       projectm_preset_switch_failed_event callback, void* user_data)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->m_presetSwitchFailedEventCallback = callback;
     projectMInstance->m_presetSwitchFailedEventUserData = user_data;
 }
@@ -119,6 +144,7 @@ void projectm_set_texture_search_paths(projectm_handle instance,
                                        size_t count)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
 
     std::vector<std::string> texturePaths;
 
@@ -133,6 +159,7 @@ void projectm_set_texture_search_paths(projectm_handle instance,
 void projectm_reset_textures(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->ResetTextures();
 }
 
@@ -171,96 +198,112 @@ char* projectm_get_vcs_version_string()
 void projectm_opengl_render_frame(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->RenderFrame();
 }
 
 void projectm_opengl_render_frame_fbo(projectm_handle instance, uint32_t framebuffer_object_id)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->RenderFrame(framebuffer_object_id);
 }
 
 void projectm_set_frame_time(projectm_handle instance, double seconds_since_first_frame)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetFrameTime(seconds_since_first_frame);
 }
 
 double projectm_get_last_frame_time(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->GetFrameTime();
 }
 
 void projectm_set_beat_sensitivity(projectm_handle instance, float sensitivity)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetBeatSensitivity(sensitivity);
 }
 
 float projectm_get_beat_sensitivity(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->GetBeatSensitivity();
 }
 
 double projectm_get_hard_cut_duration(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->HardCutDuration();
 }
 
 void projectm_set_hard_cut_duration(projectm_handle instance, double seconds)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetHardCutDuration(seconds);
 }
 
 bool projectm_get_hard_cut_enabled(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->HardCutEnabled();
 }
 
 void projectm_set_hard_cut_enabled(projectm_handle instance, bool enabled)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetHardCutEnabled(enabled);
 }
 
 float projectm_get_hard_cut_sensitivity(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->HardCutSensitivity();
 }
 
 void projectm_set_hard_cut_sensitivity(projectm_handle instance, float sensitivity)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetHardCutSensitivity(sensitivity);
 }
 
 double projectm_get_soft_cut_duration(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->SoftCutDuration();
 }
 
 void projectm_set_soft_cut_duration(projectm_handle instance, double seconds)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetSoftCutDuration(seconds);
 }
 
 double projectm_get_preset_duration(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->PresetDuration();
 }
 
 void projectm_set_preset_duration(projectm_handle instance, double seconds)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetPresetDuration(seconds);
 }
 
@@ -268,6 +311,7 @@ void projectm_get_mesh_size(projectm_handle instance, size_t* width, size_t* hei
 {
     uint32_t w, h;
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->MeshSize(w, h);
     *width = static_cast<size_t>(w);
     *height = static_cast<size_t>(h);
@@ -276,84 +320,98 @@ void projectm_get_mesh_size(projectm_handle instance, size_t* width, size_t* hei
 void projectm_set_mesh_size(projectm_handle instance, size_t width, size_t height)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetMeshSize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 }
 
 int32_t projectm_get_fps(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->TargetFramesPerSecond();
 }
 
 void projectm_set_fps(projectm_handle instance, int32_t fps)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetTargetFramesPerSecond(fps);
 }
 
 void projectm_set_aspect_correction(projectm_handle instance, bool enabled)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetAspectCorrection(enabled);
 }
 
 bool projectm_get_aspect_correction(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->AspectCorrection();
 }
 
 void projectm_set_easter_egg(projectm_handle instance, float value)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetEasterEgg(value);
 }
 
 float projectm_get_easter_egg(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->EasterEgg();
 }
 
 void projectm_touch(projectm_handle instance, float x, float y, int pressure, projectm_touch_type touch_type)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->Touch(x, y, pressure, touch_type);
 }
 
 void projectm_touch_drag(projectm_handle instance, float x, float y, int pressure)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->TouchDrag(x, y, pressure);
 }
 
 void projectm_touch_destroy(projectm_handle instance, float x, float y)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->TouchDestroy(x, y);
 }
 
 void projectm_touch_destroy_all(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->TouchDestroyAll();
 }
 
 bool projectm_get_preset_locked(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     return projectMInstance->PresetLocked();
 }
 
 void projectm_set_preset_locked(projectm_handle instance, bool lock)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetPresetLocked(lock);
 }
 
 void projectm_get_window_size(projectm_handle instance, size_t* width, size_t* height)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     *width = static_cast<size_t>(projectMInstance->WindowWidth());
     *height = static_cast<size_t>(projectMInstance->WindowHeight());
 }
@@ -361,6 +419,7 @@ void projectm_get_window_size(projectm_handle instance, size_t* width, size_t* h
 void projectm_set_window_size(projectm_handle instance, size_t width, size_t height)
 {
     auto projectMInstance = handle_to_instance(instance);
+    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
     projectMInstance->SetWindowSize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 }
 
