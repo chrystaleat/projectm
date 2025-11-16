@@ -33,6 +33,7 @@ add_executable(projectM-unittest
         AudioFeatureExtractorTest.cpp
         VerletPhysicsTest.cpp
         Hyperdimensional4DTest.cpp
+        BoidsFlockingTest.cpp
 
         $<TARGET_OBJECTS:Audio>
         $<TARGET_OBJECTS:MilkdropPreset>

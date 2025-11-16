@@ -68,6 +68,8 @@ add_library(Renderer OBJECT
         Tesseract.cpp
         Tesseract.hpp
         HyperdimensionalProjection.hpp
+        BoidsSystem.cpp
+        BoidsSystem.hpp
         )
 
 target_include_directories(Renderer
