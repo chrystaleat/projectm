@@ -70,6 +70,8 @@ add_library(Renderer OBJECT
         HyperdimensionalProjection.hpp
         BoidsSystem.cpp
         BoidsSystem.hpp
+        ReactionDiffusion.cpp
+        ReactionDiffusion.hpp
         )
 
 target_include_directories(Renderer

@@ -34,6 +34,7 @@ add_executable(projectM-unittest
         VerletPhysicsTest.cpp
         Hyperdimensional4DTest.cpp
         BoidsFlockingTest.cpp
+        ReactionDiffusionTest.cpp
 
         $<TARGET_OBJECTS:Audio>
         $<TARGET_OBJECTS:MilkdropPreset>
