@@ -9,6 +9,7 @@
 #include <SOIL2/SOIL2.h>
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <random>
 #include <vector>
@@ -234,10 +235,39 @@ auto TextureManager::LoadTexture(const ScannedFile& file) -> std::shared_ptr<Tex
         return {};
     }
 
-    uint32_t memoryBytes = width * height * 4; // RGBA, unsigned byte color channels.
+    // SECURITY FIX (CRIT-005): Prevent integer overflow in texture size calculation
+    // Use size_t for intermediate calculations and check for overflow
+    size_t bytesPerPixel = 4; // RGBA, unsigned byte color channels
+    size_t totalPixels = static_cast<size_t>(width) * static_cast<size_t>(height);
+
+    // Check for overflow in multiplication
+    if (width > 0 && height > 0 && totalPixels / static_cast<size_t>(width) != static_cast<size_t>(height))
+    {
+        // Overflow detected in width * height
+        return {};
+    }
+
+    size_t memoryBytes = totalPixels * bytesPerPixel;
+
+    // Check for overflow in final multiplication
+    if (totalPixels > 0 && memoryBytes / totalPixels != bytesPerPixel)
+    {
+        // Overflow detected in totalPixels * bytesPerPixel
+        return {};
+    }
+
+    // Also validate that the result fits in uint32_t for storage in stats
+    // This prevents issues if the stats structure expects uint32_t
+    if (memoryBytes > std::numeric_limits<uint32_t>::max())
+    {
+        // Texture too large to track stats properly
+        // Still create texture but with clamped stat value
+        memoryBytes = std::numeric_limits<uint32_t>::max();
+    }
+
     auto newTexture = std::make_shared<Texture>(unqualifiedName, tex, GL_TEXTURE_2D, width, height, true);
     m_textures[file.lowerCaseBaseName] = newTexture;
-    m_textureStats.insert({file.lowerCaseBaseName, {memoryBytes}});
+    m_textureStats.insert({file.lowerCaseBaseName, {static_cast<uint32_t>(memoryBytes)}});
 
     return newTexture;
 }

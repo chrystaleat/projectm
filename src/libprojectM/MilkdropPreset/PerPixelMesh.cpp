@@ -127,8 +127,29 @@ void PerPixelMesh::InitializeMesh(const PresetState& presetState)
         m_gridSizeX = presetState.renderContext.perPixelMeshX;
         m_gridSizeY = presetState.renderContext.perPixelMeshY;
 
-        // Grid size has changed, resize buffers accordingly
-        const size_t vertexCount = (m_gridSizeX + 1) * (m_gridSizeY + 1);
+        // SECURITY FIX (CRIT-006): Prevent integer overflow in mesh calculations
+        // Validate grid sizes are within reasonable bounds before multiplication
+        constexpr size_t maxGridSize = 400; // Match the constraint in ProjectM.cpp:454
+        if (m_gridSizeX > maxGridSize || m_gridSizeY > maxGridSize)
+        {
+            // Grid size too large, clamp to maximum
+            m_gridSizeX = std::min(static_cast<int>(maxGridSize), m_gridSizeX);
+            m_gridSizeY = std::min(static_cast<int>(maxGridSize), m_gridSizeY);
+        }
+
+        // Calculate vertex count with overflow checking
+        size_t gridPlusOneX = static_cast<size_t>(m_gridSizeX) + 1;
+        size_t gridPlusOneY = static_cast<size_t>(m_gridSizeY) + 1;
+        size_t vertexCount = gridPlusOneX * gridPlusOneY;
+
+        // Check for overflow in vertex count calculation
+        if (gridPlusOneX > 0 && vertexCount / gridPlusOneX != gridPlusOneY)
+        {
+            // Overflow detected, use safe fallback values
+            m_gridSizeX = 8;
+            m_gridSizeY = 8;
+            vertexCount = 81; // 9 * 9
+        }
 
         m_warpMesh.SetVertexCount(vertexCount);
         m_radiusAngleBuffer.Resize(vertexCount);
@@ -137,7 +158,29 @@ void PerPixelMesh::InitializeMesh(const PresetState& presetState)
         m_distanceBuffer.Resize(vertexCount);
         m_stretchBuffer.Resize(vertexCount);
 
-        m_warpMesh.Indices().Resize(m_gridSizeX * m_gridSizeY * 6);
+        // Calculate index count with overflow checking
+        size_t gridX = static_cast<size_t>(m_gridSizeX);
+        size_t gridY = static_cast<size_t>(m_gridSizeY);
+        size_t indicesPerQuad = 6; // 2 triangles * 3 vertices
+        size_t totalQuads = gridX * gridY;
+
+        // Check for overflow in quad calculation
+        if (gridX > 0 && totalQuads / gridX != gridY)
+        {
+            // Overflow detected
+            totalQuads = 64; // Fallback: 8 * 8
+        }
+
+        size_t indexCount = totalQuads * indicesPerQuad;
+
+        // Check for overflow in final index count
+        if (totalQuads > 0 && indexCount / totalQuads != indicesPerQuad)
+        {
+            // Overflow detected
+            indexCount = 384; // Fallback: 64 * 6
+        }
+
+        m_warpMesh.Indices().Resize(indexCount);
     }
     else if (m_viewportWidth == presetState.renderContext.viewportSizeX &&
              m_viewportHeight == presetState.renderContext.viewportSizeY)
