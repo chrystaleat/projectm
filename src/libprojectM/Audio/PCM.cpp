@@ -12,18 +12,32 @@ void PCM::AddToBuffer(
     uint32_t channels,
     size_t const sampleCount)
 {
-    if (channels == 0 || sampleCount == 0)
+    // SECURITY FIX (HIGH-003): Validate pointer is not NULL before dereferencing
+    if (samples == nullptr || channels == 0 || sampleCount == 0)
     {
         return;
+    }
+
+    // Validate that channels is reasonable (1 or 2 for mono/stereo)
+    // Prevents accessing beyond buffer if caller passes invalid channel count
+    if (channels > 2)
+    {
+        channels = 2;
     }
 
     for (size_t i = 0; i < sampleCount; i++)
     {
         size_t const bufferOffset = (m_start + i) % AudioBufferSamples;
-        m_inputBufferL[bufferOffset] = 128.0f * (static_cast<float>(samples[0 + i * channels]) - float(signalOffset)) / float(signalAmplitude);
+
+        // Additional safety: ensure we don't read beyond the samples buffer
+        // For channels * sampleCount elements total
+        size_t leftIndex = i * channels;
+        m_inputBufferL[bufferOffset] = 128.0f * (static_cast<float>(samples[leftIndex]) - float(signalOffset)) / float(signalAmplitude);
+
         if (channels > 1)
         {
-            m_inputBufferR[bufferOffset] = 128.0f * (static_cast<float>(samples[1 + i * channels]) - float(signalOffset)) / float(signalAmplitude);
+            size_t rightIndex = leftIndex + 1;
+            m_inputBufferR[bufferOffset] = 128.0f * (static_cast<float>(samples[rightIndex]) - float(signalOffset)) / float(signalAmplitude);
         }
         else
         {

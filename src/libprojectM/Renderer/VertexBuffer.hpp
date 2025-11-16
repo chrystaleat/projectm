@@ -288,14 +288,35 @@ void VertexBuffer<VT>::Update()
         return;
     }
 
-    if (m_vboSize == m_vertices.size())
+    // SECURITY FIX (HIGH-006): Check for integer overflow in size calculation
+    size_t vertexCount = m_vertices.size();
+    size_t bytesPerVertex = sizeof(VT);
+    size_t totalBytes = vertexCount * bytesPerVertex;
+
+    // Check for overflow: if multiplication overflowed, division won't equal original
+    if (vertexCount > 0 && totalBytes / vertexCount != bytesPerVertex)
     {
-        glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizei>(sizeof(VT) * m_vertices.size()), m_vertices.data());
+        // Overflow detected - buffer too large
+        return;
+    }
+
+    // Also check that result fits in GLsizei (typically int32_t)
+    if (totalBytes > static_cast<size_t>(std::numeric_limits<GLsizei>::max()))
+    {
+        // Too large for OpenGL
+        return;
+    }
+
+    GLsizei bufferSize = static_cast<GLsizei>(totalBytes);
+
+    if (m_vboSize == vertexCount)
+    {
+        glBufferSubData(GL_ARRAY_BUFFER, 0, bufferSize, m_vertices.data());
     }
     else
     {
-        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(sizeof(VT) * m_vertices.size()), m_vertices.data(), VertexBufferUsageToGL(m_vboUsage));
-        m_vboSize = m_vertices.size();
+        glBufferData(GL_ARRAY_BUFFER, bufferSize, m_vertices.data(), VertexBufferUsageToGL(m_vboUsage));
+        m_vboSize = vertexCount;
     }
 }
 

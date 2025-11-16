@@ -1,5 +1,7 @@
 #include "VertexIndexArray.hpp"
 
+#include <limits>
+
 namespace libprojectM {
 namespace Renderer {
 
@@ -96,14 +98,35 @@ void VertexIndexArray::Update()
         return;
     }
 
-    if (m_veabSize == m_indices.size())
+    // SECURITY FIX (HIGH-006): Check for integer overflow in size calculation
+    size_t indexCount = m_indices.size();
+    size_t bytesPerIndex = sizeof(uint32_t);
+    size_t totalBytes = indexCount * bytesPerIndex;
+
+    // Check for overflow: if multiplication overflowed, division won't equal original
+    if (indexCount > 0 && totalBytes / indexCount != bytesPerIndex)
     {
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizei>(sizeof(uint32_t) * m_indices.size()), m_indices.data());
+        // Overflow detected - buffer too large
+        return;
+    }
+
+    // Also check that result fits in GLsizei (typically int32_t)
+    if (totalBytes > static_cast<size_t>(std::numeric_limits<GLsizei>::max()))
+    {
+        // Too large for OpenGL
+        return;
+    }
+
+    GLsizei bufferSize = static_cast<GLsizei>(totalBytes);
+
+    if (m_veabSize == indexCount)
+    {
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, bufferSize, m_indices.data());
     }
     else
     {
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizei>(sizeof(uint32_t) * m_indices.size()), m_indices.data(), VertexBufferUsageToGL(m_vboUsage));
-        m_veabSize = m_indices.size();
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferSize, m_indices.data(), VertexBufferUsageToGL(m_vboUsage));
+        m_veabSize = indexCount;
     }
 }
 

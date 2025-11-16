@@ -62,8 +62,9 @@ void TextureAttachment::ReplaceTexture(int width, int height)
     GLint textureFormat;
     GLenum pixelFormat;
 
+    // SECURITY FIX (HIGH-001): Check if texture exists before dereferencing
     // Don't replace if size hasn't changed
-    if (m_texture->Width() == width && m_texture->Height() == height)
+    if (m_texture && m_texture->Width() == width && m_texture->Height() == height)
     {
         return;
     }

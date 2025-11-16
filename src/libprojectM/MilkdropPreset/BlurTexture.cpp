@@ -130,17 +130,42 @@ void BlurTexture::Update(const Renderer::Texture& sourceTexture, const PerFrameC
     std::array<float, 3> scale{};
     std::array<float, 3> bias{};
 
+    // SECURITY FIX (HIGH-005): Prevent division by zero
     // figure out the progressive scale & bias needed, at each step,
     // to go from one [min..max] range to the next.
-    scale[0] = 1.0f / (blurMax[0] - blurMin[0]);
+    constexpr float epsilon = 0.00001f; // Minimum difference to avoid division by zero
+
+    float diff0 = blurMax[0] - blurMin[0];
+    if (std::abs(diff0) < epsilon)
+    {
+        diff0 = epsilon; // Prevent division by zero
+    }
+    scale[0] = 1.0f / diff0;
     bias[0] = -blurMin[0] * scale[0];
-    float tempMin = (blurMin[1] - blurMin[0]) / (blurMax[0] - blurMin[0]);
-    float tempMax = (blurMax[1] - blurMin[0]) / (blurMax[0] - blurMin[0]);
-    scale[1] = 1.0f / (tempMax - tempMin);
+
+    float tempMin = (blurMin[1] - blurMin[0]) / diff0;
+    float tempMax = (blurMax[1] - blurMin[0]) / diff0;
+    float diff1 = tempMax - tempMin;
+    if (std::abs(diff1) < epsilon)
+    {
+        diff1 = epsilon;
+    }
+    scale[1] = 1.0f / diff1;
     bias[1] = -tempMin * scale[1];
-    tempMin = (blurMin[2] - blurMin[1]) / (blurMax[1] - blurMin[1]);
-    tempMax = (blurMax[2] - blurMin[1]) / (blurMax[1] - blurMin[1]);
-    scale[2] = 1.0f / (tempMax - tempMin);
+
+    float diff2 = blurMax[1] - blurMin[1];
+    if (std::abs(diff2) < epsilon)
+    {
+        diff2 = epsilon;
+    }
+    tempMin = (blurMin[2] - blurMin[1]) / diff2;
+    tempMax = (blurMax[2] - blurMin[1]) / diff2;
+    float diff3 = tempMax - tempMin;
+    if (std::abs(diff3) < epsilon)
+    {
+        diff3 = epsilon;
+    }
+    scale[2] = 1.0f / diff3;
     bias[2] = -tempMin * scale[2];
 
     // Remember previously bound framebuffer
