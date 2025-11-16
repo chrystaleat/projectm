@@ -283,21 +283,25 @@ auto TextureManager::GetRandomTexture(const std::string& randomName) -> TextureS
 
     std::string lowerCaseName = Utils::ToLower(randomName);
 
-    if (m_scannedTextureFiles.empty())
+    // FIX: Cache vector size to prevent TOCTOU race condition
+    auto scannedFilesCount = m_scannedTextureFiles.size();
+
+    if (scannedFilesCount == 0)
     {
         return {};
     }
 
     std::string prefix;
-    if (lowerCaseName.length() > 7 && lowerCaseName.at(6) == '_')
+    // FIX: Off-by-one error - need >= 7 to safely access index 6
+    if (lowerCaseName.length() >= 7 && lowerCaseName.at(6) == '_')
     {
         prefix = lowerCaseName.substr(7);
     }
 
     if (prefix.empty())
     {
-        // Just pick a random index.
-        std::uniform_int_distribution<size_t> distribution(0, m_scannedTextureFiles.size() - 1);
+        // Just pick a random index. Use cached size to prevent TOCTOU.
+        std::uniform_int_distribution<size_t> distribution(0, scannedFilesCount - 1);
         selectedFilename = m_scannedTextureFiles.at(distribution(rndEngine)).lowerCaseBaseName;
     }
     else
