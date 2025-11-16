@@ -25,6 +25,9 @@ void PCM::AddToBuffer(
         channels = 2;
     }
 
+    // SECURITY FIX (HIGH-002): Lock mutex to prevent race conditions on m_start and input buffers
+    std::lock_guard<std::mutex> lock(m_bufferMutex);
+
     for (size_t i = 0; i < sampleCount; i++)
     {
         size_t const bufferOffset = (m_start + i) % AudioBufferSamples;
@@ -124,6 +127,9 @@ void PCM::UpdateSpectrum(const WaveformBuffer& waveformData, SpectrumBuffer& spe
 
 void PCM::CopyNewWaveformData(const WaveformBuffer& source, WaveformBuffer& destination)
 {
+    // SECURITY FIX (HIGH-002): Lock mutex to prevent race conditions when reading m_start and input buffers
+    std::lock_guard<std::mutex> lock(m_bufferMutex);
+
     auto const bufferStartIndex = m_start.load();
 
     for (size_t i = 0; i < AudioBufferSamples; i++)

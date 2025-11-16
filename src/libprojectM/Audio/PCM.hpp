@@ -18,6 +18,7 @@
 #include <atomic>
 #include <cstdint>
 #include <cstdlib>
+#include <mutex>
 
 
 namespace libprojectM {
@@ -93,6 +94,9 @@ private:
     WaveformBuffer m_inputBufferL{0.f}; //!< Circular buffer for left-channel PCM data.
     WaveformBuffer m_inputBufferR{0.f}; //!< Circular buffer for right-channel PCM data.
     std::atomic<size_t> m_start{0};     //!< Circular buffer start index.
+
+    // SECURITY FIX (HIGH-002): Mutex to protect circular buffer access from race conditions
+    mutable std::mutex m_bufferMutex;   //!< Protects m_start and input buffers from concurrent access.
 
     // Frame waveform data
     WaveformBuffer m_waveformL{0.f}; //!< Left-channel waveform data, aligned. Only the first WaveformSamples number of samples are valid.
