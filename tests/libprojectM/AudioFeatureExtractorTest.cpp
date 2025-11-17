@@ -10,7 +10,10 @@
 #include <Audio/FrameAudioData.hpp>
 
 #include <cmath>
-#include <numbers>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 using namespace libprojectM::Audio;
 
@@ -31,7 +34,7 @@ protected:
         for (size_t i = 0; i < WaveformSamples; ++i)
         {
             float t = static_cast<float>(i) / sampleRate;
-            float value = amplitude * std::sin(2.0f * std::numbers::pi_v<float> * frequency * t);
+            float value = amplitude * std::sin(2.0f * static_cast<float>(M_PI) * frequency * t);
             audioData.waveformLeft[i] = value;
             audioData.waveformRight[i] = value;
         }

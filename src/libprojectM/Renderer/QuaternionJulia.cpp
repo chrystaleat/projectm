@@ -8,7 +8,10 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-#include <numbers>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 namespace libprojectM {
 namespace Renderer {
@@ -121,7 +124,7 @@ void QuaternionJulia::SetAudioModulation(float energy, float beat, float bass)
     m_bassLevel = bass;
 
     // Modulate c parameter with beat (rotate in quaternion space)
-    float rotationAngle = beat * std::numbers::pi_v<float> * 0.25f;
+    float rotationAngle = beat * static_cast<float>(M_PI) * 0.25f;
     m_c = m_baseC;
     RotateC(rotationAngle);
 

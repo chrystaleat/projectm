@@ -219,7 +219,7 @@ void projectm_set_frame_time(projectm_handle instance, double seconds_since_firs
 double projectm_get_last_frame_time(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, 0.0);
     return projectMInstance->GetFrameTime();
 }
 
@@ -233,14 +233,14 @@ void projectm_set_beat_sensitivity(projectm_handle instance, float sensitivity)
 float projectm_get_beat_sensitivity(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, 0.0f);
     return projectMInstance->GetBeatSensitivity();
 }
 
 double projectm_get_hard_cut_duration(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, 0.0);
     return projectMInstance->HardCutDuration();
 }
 
@@ -254,7 +254,7 @@ void projectm_set_hard_cut_duration(projectm_handle instance, double seconds)
 bool projectm_get_hard_cut_enabled(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, false);
     return projectMInstance->HardCutEnabled();
 }
 
@@ -268,7 +268,7 @@ void projectm_set_hard_cut_enabled(projectm_handle instance, bool enabled)
 float projectm_get_hard_cut_sensitivity(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, 0.0f);
     return projectMInstance->HardCutSensitivity();
 }
 
@@ -282,7 +282,7 @@ void projectm_set_hard_cut_sensitivity(projectm_handle instance, float sensitivi
 double projectm_get_soft_cut_duration(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, 0.0);
     return projectMInstance->SoftCutDuration();
 }
 
@@ -296,7 +296,7 @@ void projectm_set_soft_cut_duration(projectm_handle instance, double seconds)
 double projectm_get_preset_duration(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, 0.0);
     return projectMInstance->PresetDuration();
 }
 
@@ -327,7 +327,7 @@ void projectm_set_mesh_size(projectm_handle instance, size_t width, size_t heigh
 int32_t projectm_get_fps(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, 0);
     return projectMInstance->TargetFramesPerSecond();
 }
 
@@ -348,7 +348,7 @@ void projectm_set_aspect_correction(projectm_handle instance, bool enabled)
 bool projectm_get_aspect_correction(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, false);
     return projectMInstance->AspectCorrection();
 }
 
@@ -362,7 +362,7 @@ void projectm_set_easter_egg(projectm_handle instance, float value)
 float projectm_get_easter_egg(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, 0.0f);
     return projectMInstance->EasterEgg();
 }
 
@@ -397,7 +397,7 @@ void projectm_touch_destroy_all(projectm_handle instance)
 bool projectm_get_preset_locked(projectm_handle instance)
 {
     auto projectMInstance = handle_to_instance(instance);
-    VALIDATE_INSTANCE_OR_RETURN_VOID(projectMInstance);
+    VALIDATE_INSTANCE_OR_RETURN(projectMInstance, false);
     return projectMInstance->PresetLocked();
 }
 
