@@ -1,3 +1,6 @@
 [submodule "vendor/projectm-eval"]
 	path = vendor/projectm-eval
 	url = git@github.com:chrystaleat/projectm-eval.git
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/ocornut/imgui.git

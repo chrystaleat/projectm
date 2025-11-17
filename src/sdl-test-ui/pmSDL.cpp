@@ -45,6 +45,16 @@ projectMSDL::projectMSDL(SDL_GLContext glCtx, const std::string& presetPath)
 
 projectMSDL::~projectMSDL()
 {
+#ifdef ENABLE_SETTINGS_UI
+    // Clean up settings UI first
+    if (_settingsUI)
+    {
+        _settingsUI->Shutdown();
+        _settingsUI.reset();
+    }
+    _settingsManager.reset();
+#endif
+
     projectm_playlist_destroy(_playlist);
     _playlist = nullptr;
     projectm_destroy(_projectM);
@@ -324,6 +334,15 @@ void projectMSDL::pollEvent()
     int mousepressure = 0;
     while (SDL_PollEvent(&evt))
     {
+#ifdef ENABLE_SETTINGS_UI
+        // Let settings UI process event first
+        if (_settingsUI && _settingsUI->ProcessEvent(&evt))
+        {
+            // Event was consumed by UI, skip processing
+            continue;
+        }
+#endif
+
         switch (evt.type)
         {
             case SDL_WINDOWEVENT:
@@ -442,6 +461,16 @@ void projectMSDL::renderFrame()
 
     projectm_opengl_render_frame(_projectM);
 
+#ifdef ENABLE_SETTINGS_UI
+    // Render settings UI on top
+    if (_settingsUI)
+    {
+        _settingsUI->NewFrame();
+        _settingsUI->Render();
+        _settingsUI->EndFrame();
+    }
+#endif
+
     SDL_GL_SwapWindow(_sdlWindow);
 }
 
@@ -452,6 +481,28 @@ void projectMSDL::init(SDL_Window* window, const bool _renderToTexture)
 
 #ifdef WASAPI_LOOPBACK
     wasapi = true;
+#endif
+
+#ifdef ENABLE_SETTINGS_UI
+    // Initialize settings system
+    _settingsManager = std::make_unique<libprojectM::Settings::SettingsManager>();
+    _settingsUI = std::make_unique<libprojectM::Settings::SettingsUI>(*_settingsManager);
+
+    // Initialize ImGui
+    if (_settingsUI->Init(window, _openGlContext))
+    {
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Settings UI initialized successfully. Press F1 to toggle.\n");
+
+        // Register callback for settings changes
+        _settingsManager->RegisterChangeCallback([this](libprojectM::Settings::SettingsCategory category) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Settings changed: category %d\n", static_cast<int>(category));
+            // Apply settings to projectM here if needed
+        });
+    }
+    else
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize Settings UI\n");
+    }
 #endif
 }
 
