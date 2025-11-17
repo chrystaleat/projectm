@@ -39,7 +39,30 @@ projectMSDL::projectMSDL(SDL_GLContext glCtx, const std::string& presetPath)
 {
     projectm_get_window_size(_projectM, &_width, &_height);
     projectm_playlist_set_preset_switched_event_callback(_playlist, &projectMSDL::presetSwitchedEvent, static_cast<void*>(this));
+
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Loading presets from: %s\n", presetPath.c_str());
     projectm_playlist_add_path(_playlist, presetPath.c_str(), true, false);
+
+    uint32_t presetCount = projectm_playlist_size(_playlist);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Loaded %u preset(s)\n", presetCount);
+
+    if (presetCount == 0)
+    {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+            "WARNING: No presets found in %s!\n"
+            "  The visualizer will use a default preset.\n"
+            "  Please download presets and place them in the presets directory.\n"
+            "  See PRESET_SETUP.md for instructions.\n",
+            presetPath.c_str());
+    }
+    else if (presetCount == 1)
+    {
+        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+            "NOTE: Only 1 preset loaded. Preset switching will not work.\n"
+            "  Download more presets for full functionality.\n"
+            "  See PRESET_SETUP.md for instructions.\n");
+    }
+
     projectm_playlist_set_shuffle(_playlist, _shuffle);
 }
 

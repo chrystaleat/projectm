@@ -193,7 +193,37 @@ projectMSDL *setupSDLApp() {
 
     // load configuration file
     std::string configFilePath = getConfigFilePath(base_path);
-    std::string presetURL = base_path + "/presets";
+    std::string presetURL = base_path + "/presets";  // Default
+
+    // Read preset path from config file if available
+    if (!configFilePath.empty())
+    {
+        try
+        {
+            ConfigFile config(configFilePath);
+            std::string configPresetPath = config.read<std::string>("Preset Path", "");
+
+            if (!configPresetPath.empty())
+            {
+                // Check if path is absolute
+                if (configPresetPath[0] == '/' || (configPresetPath.length() > 1 && configPresetPath[1] == ':'))
+                {
+                    // Absolute path
+                    presetURL = configPresetPath;
+                }
+                else
+                {
+                    // Relative path - make it relative to base_path
+                    presetURL = base_path + "/" + configPresetPath;
+                }
+                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Using preset path from config: %s\n", presetURL.c_str());
+            }
+        }
+        catch (...)
+        {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Could not read Preset Path from config, using default: %s\n", presetURL.c_str());
+        }
+    }
 
     app = new projectMSDL(glCtx, presetURL);
 
