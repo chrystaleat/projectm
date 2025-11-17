@@ -153,7 +153,20 @@ void SettingsUI::Shutdown()
 
 bool SettingsUI::ProcessEvent(SDL_Event* event)
 {
-    if (!m_initialized || !m_visible)
+    if (!m_initialized)
+    {
+        return false;
+    }
+
+    // Always check for F1 toggle, even when UI is hidden
+    if (event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_F1)
+    {
+        ToggleVisibility();
+        return true;
+    }
+
+    // If UI is not visible, don't process other events
+    if (!m_visible)
     {
         return false;
     }
@@ -167,13 +180,6 @@ bool SettingsUI::ProcessEvent(SDL_Event* event)
     {
         if (io.WantCaptureKeyboard)
         {
-            return true;
-        }
-
-        // Handle F1 toggle
-        if (event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_F1)
-        {
-            ToggleVisibility();
             return true;
         }
     }
