@@ -9,6 +9,7 @@ add_compile_definitions(
 add_subdirectory(Audio)
 add_subdirectory(MilkdropPreset)
 add_subdirectory(Renderer)
+add_subdirectory(Settings)
 add_subdirectory(UserSprites)
 
 add_library(projectM_main OBJECT
@@ -36,6 +37,7 @@ target_link_libraries(projectM_main
         Audio
         MilkdropPreset
         Renderer
+        Settings
         hlslparser
         SOIL2
         libprojectM::API

@@ -48,6 +48,13 @@
 #include "opengl.h"
 #include "setup.hpp"
 
+// Settings System
+#ifdef ENABLE_SETTINGS_UI
+#include <Settings/SettingsManager.hpp>
+#include <Settings/SettingsUI.hpp>
+#include <memory>
+#endif
+
 
 #if defined _MSC_VER
 #include <direct.h>
@@ -171,4 +178,10 @@ private:
     int _selectedAudioDevice{0};
 
     std::string _presetName; //!< Current preset name
+
+#ifdef ENABLE_SETTINGS_UI
+    // Settings System
+    std::unique_ptr<libprojectM::Settings::SettingsManager> _settingsManager;
+    std::unique_ptr<libprojectM::Settings::SettingsUI> _settingsUI;
+#endif
 };

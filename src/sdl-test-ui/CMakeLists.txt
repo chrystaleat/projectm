@@ -25,6 +25,14 @@ target_link_libraries(projectM-Test-UI
         ${CMAKE_DL_LIBS}
         )
 
+# Link ImGui if available
+if(TARGET imgui::imgui)
+    target_link_libraries(projectM-Test-UI
+            PRIVATE
+            imgui::imgui
+    )
+endif()
+
 if(MSVC)
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.16")
         set_target_properties(projectM-Test-UI
